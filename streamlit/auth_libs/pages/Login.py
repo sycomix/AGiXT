@@ -22,8 +22,7 @@ st.set_page_config(
 
 from auth_libs.Users import check_auth_status
 
-logged = st.session_state.get("logged_in")
-if logged:
+if logged := st.session_state.get("logged_in"):
     st.session_state["login_page"] = True
 check_auth_status()
 CFIG = Cfig()

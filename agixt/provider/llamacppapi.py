@@ -19,7 +19,7 @@ class LlamacppapiProvider:
         self.MAX_TOKENS = MAX_TOKENS if MAX_TOKENS else 2048
         self.AI_MODEL = AI_MODEL if AI_MODEL else "default"
         self.STOP_SEQUENCE = STOP_SEQUENCE if STOP_SEQUENCE else "</s>"
-        self.MAX_TOKENS = int(self.MAX_TOKENS) if self.MAX_TOKENS else 2048
+        self.MAX_TOKENS = self.MAX_TOKENS if self.MAX_TOKENS else 2048
 
     async def instruct(self, prompt, tokens: int = 0):
         params = {
@@ -31,7 +31,4 @@ class LlamacppapiProvider:
         response = requests.post(f"{self.AI_PROVIDER_URI}/v1/completions", json=params)
         data = response.json()
         print(data)
-        choices = data["choices"]
-        if choices:
-            return choices[0]["text"]
-        return None
+        return choices[0]["text"] if (choices := data["choices"]) else None

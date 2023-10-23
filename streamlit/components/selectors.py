@@ -16,12 +16,11 @@ def cached_get_prompts():
 
 def build_args(args: dict = {}, prompt: dict = {}, step_number: int = 0):
     return {
-        arg: st.text_input(arg, value=prompt.get(arg, ""), key=f"{arg}_{step_number}")
+        arg: st.text_input(
+            arg, value=prompt.get(arg, ""), key=f"{arg}_{step_number}"
+        )
         for arg in args
-        if arg != "context"
-        and arg != "command_list"
-        and arg != "COMMANDS"
-        and arg != "user_input"
+        if arg not in ["context", "command_list", "COMMANDS", "user_input"]
     }
 
 
@@ -39,11 +38,10 @@ def prompt_selection(prompt: dict = {}, step_number: int = 0):
     if prompt_name:
         prompt_args = ApiClient.get_prompt_args(prompt_name)
         args = build_args(args=prompt_args, prompt=prompt, step_number=step_number)
-        new_prompt = {
+        return {
             "prompt_name": prompt_name,
             **args,
         }
-        return new_prompt
 
 
 def command_selection(prompt: dict = {}, step_number: int = 0):
@@ -61,11 +59,10 @@ def command_selection(prompt: dict = {}, step_number: int = 0):
     if command_name:
         command_args = ApiClient.get_command_args(command_name=command_name)
         args = build_args(args=command_args, prompt=prompt, step_number=step_number)
-        new_prompt = {
+        return {
             "command_name": command_name,
             **args,
         }
-        return new_prompt
 
 
 def chain_selection(prompt: dict = {}, step_number: int = 0):
@@ -85,8 +82,7 @@ def chain_selection(prompt: dict = {}, step_number: int = 0):
     )
 
     if chain_name:
-        new_prompt = {"chain_name": chain_name, "user_input": user_input}
-        return new_prompt
+        return {"chain_name": chain_name, "user_input": user_input}
 
 
 def agent_selection():

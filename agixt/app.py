@@ -317,7 +317,7 @@ async def delete_history_message(
     agent_name: str, message: ResponseMessage
 ) -> ResponseMessage:
     Agent(agent_name=agent_name).delete_history_message(message.message)
-    return ResponseMessage(message=f"Message deleted.")
+    return ResponseMessage(message="Message deleted.")
 
 
 @app.delete("/api/agent/{agent_name}/memory", tags=["Agent"])
@@ -352,7 +352,7 @@ async def prompt_agent(agent_name: str, agent_prompt: AgentPrompt):
 @app.post("/api/agent/{agent_name}/smartinstruct/{shots}", tags=["Agent"])
 async def smartinstruct(agent_name: str, shots: int, prompt: Prompt):
     agent = Interactions(agent_name=agent_name)
-    response = await agent.smart_instruct(user_input=prompt.prompt, shots=int(shots))
+    response = await agent.smart_instruct(user_input=prompt.prompt, shots=shots)
     return {"response": str(response)}
 
 
@@ -370,11 +370,8 @@ async def completion(prompt: Completions):
     # prompt.model is the agent name
     agent = Interactions(agent_name=prompt.model)
     agent_config = Agent(agent_name=prompt.model).get_agent_config()
-    if "settings" in agent_config:
-        if "AI_MODEL" in agent_config["settings"]:
-            model = agent_config["settings"]["AI_MODEL"]
-        else:
-            model = "undefined"
+    if "settings" in agent_config and "AI_MODEL" in agent_config["settings"]:
+        model = agent_config["settings"]["AI_MODEL"]
     else:
         model = "undefined"
     response = await agent.run(
@@ -385,7 +382,7 @@ async def completion(prompt: Completions):
     )
     characters = string.ascii_letters + string.digits
     random_chars = "".join(random.choice(characters) for _ in range(15))
-    res_model = {
+    return {
         "id": f"cmpl-{random_chars}",
         "object": "text_completion",
         "created": int(time.time()),
@@ -398,9 +395,12 @@ async def completion(prompt: Completions):
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        },
     }
-    return res_model
 
 
 @app.post("/api/v1/chat/completions", tags=["Agent"])
@@ -408,11 +408,8 @@ async def chat_completion(prompt: Completions):
     # prompt.model is the agent name
     agent = Interactions(agent_name=prompt.model)
     agent_config = Agent(agent_name=prompt.model).get_agent_config()
-    if "settings" in agent_config:
-        if "AI_MODEL" in agent_config["settings"]:
-            model = agent_config["settings"]["AI_MODEL"]
-        else:
-            model = "undefined"
+    if "settings" in agent_config and "AI_MODEL" in agent_config["settings"]:
+        model = agent_config["settings"]["AI_MODEL"]
     else:
         model = "undefined"
     response = await agent.run(
@@ -423,7 +420,7 @@ async def chat_completion(prompt: Completions):
     )
     characters = string.ascii_letters + string.digits
     random_chars = "".join(random.choice(characters) for _ in range(15))
-    res_model = {
+    return {
         "id": f"chatcmpl-{random_chars}",
         "object": "chat.completion",
         "created": int(time.time()),
@@ -440,9 +437,12 @@ async def chat_completion(prompt: Completions):
                 "finish_reason": "stop",
             }
         ],
-        "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0},
+        "usage": {
+            "prompt_tokens": 0,
+            "completion_tokens": 0,
+            "total_tokens": 0,
+        },
     }
-    return res_model
 
 
 @app.post("/api/agent/{agent_name}/smartchat/{shots}", tags=["Agent"])
@@ -492,8 +492,7 @@ async def toggle_command(
 
 @app.get("/api/chain", tags=["Chain"])
 async def get_chains():
-    chains = Chain().get_chains()
-    return chains
+    return Chain().get_chains()
 
 
 @app.get("/api/chain/{chain_name}", tags=["Chain"])
@@ -516,14 +515,13 @@ async def get_chain_responses(chain_name: str):
 
 @app.post("/api/chain/{chain_name}/run", tags=["Chain"])
 async def run_chain(chain_name: str, user_input: RunChain):
-    chain_response = await Interactions(agent_name="").run_chain(
+    return await Interactions(agent_name="").run_chain(
         chain_name=chain_name,
         user_input=user_input.prompt,
         agent_override=user_input.agent_override,
         all_responses=user_input.all_responses,
         from_step=user_input.from_step,
     )
-    return chain_response
 
 
 @app.post("/api/chain", tags=["Chain"])

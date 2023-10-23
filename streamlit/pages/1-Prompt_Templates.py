@@ -19,9 +19,7 @@ prompt_list = ApiClient.get_prompts()
 action = st.selectbox("Action", ["Create New Prompt", "Modify Prompt", "Delete Prompt"])
 
 if action == "Create New Prompt":
-    # Import prompt button
-    prompt_file = st.file_uploader("Import Prompt", type=["txt"])
-    if prompt_file:
+    if prompt_file := st.file_uploader("Import Prompt", type=["txt"]):
         prompt_name = prompt_file.name.split(".")[0]
         prompt_content = prompt_file.read().decode("utf-8")
         ApiClient.add_prompt(prompt_name=prompt_name, prompt=prompt_content)

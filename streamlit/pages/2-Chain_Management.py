@@ -27,9 +27,7 @@ else:
 
 if chain_action == "Create Chain":
     action_button = st.button("Create New Chain")
-    # Import Chain
-    chain_file = st.file_uploader("Import Chain", type=["json"])
-    if chain_file:
+    if chain_file := st.file_uploader("Import Chain", type=["json"]):
         chain_name = chain_file.name.split(".")[0]
         chain_content = chain_file.read().decode("utf-8")
         steps = json.loads(chain_content)
@@ -45,8 +43,7 @@ if chain_action == "Create Chain":
             st.error("Chain name is required.")
 
 elif chain_action == "Delete Chain":
-    action_button = st.button("Delete Chain")
-    if action_button:
+    if action_button := st.button("Delete Chain"):
         if chain_name:
             ApiClient.delete_chain(chain_name=chain_name)
             st.success(f"Chain '{chain_name}' deleted.")

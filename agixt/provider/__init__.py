@@ -7,11 +7,11 @@ import inspect
 
 
 def get_providers():
-    providers = []
-    for provider in glob.glob("provider/*.py"):
-        if "__init__.py" not in provider:
-            providers.append(os.path.splitext(os.path.basename(provider))[0])
-    return providers
+    return [
+        os.path.splitext(os.path.basename(provider))[0]
+        for provider in glob.glob("provider/*.py")
+        if "__init__.py" not in provider
+    ]
 
 
 def get_provider_options(provider_name):
@@ -20,9 +20,11 @@ def get_provider_options(provider_name):
     provider_class = getattr(module, f"{provider_name.capitalize()}Provider")
     signature = inspect.signature(provider_class.__init__)
     options = {
-        name: param.default if param.default is not inspect.Parameter.empty else None
+        name: param.default
+        if param.default is not inspect.Parameter.empty
+        else None
         for name, param in signature.parameters.items()
-        if name != "self" and name != "kwargs"
+        if name not in ["self", "kwargs"]
     }
     options["provider"] = provider_name
     return options
@@ -45,11 +47,11 @@ class Provider:
         return getattr(self.instance, attr)
 
     def get_providers(self):
-        providers = []
-        for provider in glob.glob("provider/*.py"):
-            if "__init__.py" not in provider:
-                providers.append(os.path.splitext(os.path.basename(provider))[0])
-        return providers
+        return [
+            os.path.splitext(os.path.basename(provider))[0]
+            for provider in glob.glob("provider/*.py")
+            if "__init__.py" not in provider
+        ]
 
     def install_requirements(self):
         requirements = getattr(self.instance, "requirements", [])
@@ -67,12 +69,9 @@ def max_tokens_ceiling(ai_model: str):
     """Generates the max token limit for a given model"""
 
     # https://huggingface.co/OpenAssistant/oasst-sft-6-llama-30b-xor
-    if ai_model == "openassistant":
+    if ai_model in {"openassistant", "default"}:
         return 2000
-    # https://huggingface.co/bigcode/starcoderbase
     elif ai_model == "starcoderbase":
         return 8192
-    elif ai_model == "default":
-        return 2000
     else:
         return 999999999

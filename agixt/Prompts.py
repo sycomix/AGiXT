@@ -22,10 +22,11 @@ def get_prompt_file_path(prompt_name, model="default"):
         os.mkdir(base_path)
     if not os.path.exists(base_model_path):
         os.mkdir(base_model_path)
-    prompt_file = (
-        model_prompt_file if os.path.isfile(model_prompt_file) else default_prompt_file
+    return (
+        model_prompt_file
+        if os.path.isfile(model_prompt_file)
+        else default_prompt_file
     )
-    return prompt_file
 
 
 class Prompts:
@@ -40,25 +41,22 @@ class Prompts:
     def get_prompt(self, prompt_name, model="default"):
         prompt_file = get_prompt_file_path(prompt_name=prompt_name, model=model)
         with open(prompt_file, "r") as f:
-            prompt = f.read()
-            return prompt
+            return f.read()
 
     def get_prompts(self):
-        # Get all files in prompts folder that end in .txt and replace .txt with empty string
-        prompts = []
-        for file in os.listdir("prompts"):
-            if file.endswith(".txt"):
-                prompts.append(file.replace(".txt", ""))
-        return prompts
+        return [
+            file.replace(".txt", "")
+            for file in os.listdir("prompts")
+            if file.endswith(".txt")
+        ]
 
     def get_prompt_args(self, prompt_name):
         prompt = self.get_prompt(prompt_name=prompt_name)
-        # Find anything in the file between { and } and add them to a list to return
-        prompt_vars = []
-        for word in prompt.split():
-            if word.startswith("{") and word.endswith("}"):
-                prompt_vars.append(word[1:-1])
-        return prompt_vars
+        return [
+            word[1:-1]
+            for word in prompt.split()
+            if word.startswith("{") and word.endswith("}")
+        ]
 
     def delete_prompt(self, prompt_name):
         prompt_file = get_prompt_file_path(prompt_name=prompt_name)

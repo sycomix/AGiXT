@@ -28,10 +28,7 @@ class microsoft_365(Extensions):
                 "Move Email with Microsoft 365": self.move_email,
             }
             try:
-                if (
-                    self.MICROSOFT_365_CLIENT_SECRET != "None"
-                    and self.MICROSOFT_365_CLIENT_SECRET != ""
-                ):
+                if self.MICROSOFT_365_CLIENT_SECRET not in ["None", ""]:
                     self.credentials = self.get_credentials()
             except:
                 pass
@@ -81,12 +78,10 @@ class microsoft_365(Extensions):
             response = service.users().messages().list(userId="me").execute()
             emails = response.get("value", [])
 
-            result = []
-            for email in emails:
-                result.append(f"Email ID: {email['id']}, Subject: {email['subject']}")
-
-            return result
-
+            return [
+                f"Email ID: {email['id']}, Subject: {email['subject']}"
+                for email in emails
+            ]
         except HttpError as error:
             return [f"Error checking email: {error}"]
 

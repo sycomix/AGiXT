@@ -55,10 +55,9 @@ def get_history(agent_name):
                 item["message"] = html.escape(item["message"])
                 item["message"] = item["message"].replace(r"\n", "<br>")
 
-                # Check if the message is a code block
-                code_block_match = re.search(r"```(.*)```", item["message"], re.DOTALL)
-
-                if code_block_match:
+                if code_block_match := re.search(
+                    r"```(.*)```", item["message"], re.DOTALL
+                ):
                     # Extract the code block from the match object
                     code_message = code_block_match.group(1)
                     # Replace the code block in the original message with the code block wrapped in <pre><code> tags

@@ -88,15 +88,12 @@ class Interactions:
                     if "{STEP" in value:
                         # Count how many times {STEP is in the value
                         step_count = value.count("{STEP")
-                        for i in range(step_count):
+                        for _ in range(step_count):
                             # Get the step number from value between {STEP and }
                             new_step_number = int(value.split("{STEP")[1].split("}")[0])
-                            # get the response from the step number
-                            step_response = self.get_step_response(
+                            if step_response := self.get_step_response(
                                 chain_name=chain_name, step_number=new_step_number
-                            )
-                            # replace the {STEPx} with the response
-                            if step_response:
+                            ):
                                 resp = (
                                     step_response["response"]
                                     if "response" in step_response
@@ -119,17 +116,14 @@ class Interactions:
                 )
             if "{STEP" in prompt_content:
                 step_count = value.count("{STEP")
-                for i in range(step_count):
+                for _ in range(step_count):
                     # Get the step number from value between {STEP and }
                     new_step_number = int(
                         prompt_content.split("{STEP")[1].split("}")[0]
                     )
-                    # get the response from the step number
-                    step_response = self.get_step_response(
+                    if step_response := self.get_step_response(
                         chain_name=chain_name, step_number=new_step_number
-                    )
-                    # replace the {STEPx} with the response
-                    if step_response:
+                    ):
                         resp = (
                             step_response["response"]
                             if "response" in step_response
@@ -230,7 +224,7 @@ class Interactions:
         disable_memory: bool = False,
         **kwargs,
     ):
-        shots = int(shots)
+        shots = shots
         if learn_file != "":
             try:
                 learning_file = await self.memories.mem_read_file(file_path=learn_file)
@@ -248,13 +242,12 @@ class Interactions:
             **kwargs,
         )
         if websearch:
-            if user_input == "":
-                if "primary_objective" in kwargs and "task" in kwargs:
-                    search_string = f"Primary Objective: {kwargs['primary_objective']}\n\nTask: {kwargs['task']}"
-                else:
-                    search_string = ""
-            else:
+            if user_input:
                 search_string = user_input
+            elif "primary_objective" in kwargs and "task" in kwargs:
+                search_string = f"Primary Objective: {kwargs['primary_objective']}\n\nTask: {kwargs['task']}"
+            else:
+                search_string = ""
             if search_string != "":
                 await self.websearch_agent(
                     user_input=search_string, depth=websearch_depth
@@ -276,10 +269,10 @@ class Interactions:
                 self.failures == 0
                 logging.info("Failed to get a response 5 times in a row.")
                 return None
-            logging.info(f"Retrying in 10 seconds...")
+            logging.info("Retrying in 10 seconds...")
             time.sleep(10)
             if context_results > 0:
-                context_results = context_results - 1
+                context_results -= 1
             self.response = ApiClient.prompt_agent(
                 agent_name=self.agent_name,
                 user_input=user_input,
@@ -304,7 +297,7 @@ class Interactions:
                 **kwargs,
             )
             return_response = ""
-            if bool(self.agent.AUTONOMOUS_EXECUTION) == True:
+            if bool(self.agent.AUTONOMOUS_EXECUTION):
                 try:
                     self.response = json.loads(self.response)
                     if "response" in self.response:
@@ -324,8 +317,8 @@ class Interactions:
                 return_response = f"{self.response}\n\n{execution_response}"
             self.response = return_response
         logging.info(f"Response: {self.response}")
-        if self.response != "" and self.response != None:
-            if disable_memory == False:
+        if self.response not in ["", None]:
+            if not disable_memory:
                 try:
                     await self.memories.store_result(
                         input=user_input, result=self.response
@@ -340,7 +333,7 @@ class Interactions:
 
         if shots > 1:
             responses = [self.response]
-            for shot in range(shots - 1):
+            for _ in range(shots - 1):
                 shot_response = ApiClient.prompt_agent(
                     agent_name=self.agent_name,
                     user_input=user_input,
@@ -410,10 +403,7 @@ class Interactions:
                         all_responses=False,
                         from_step=1,
                     )
-        if result:
-            return result
-        else:
-            return None
+        return result if result else None
 
     async def run_chain(
         self,
@@ -434,14 +424,13 @@ class Interactions:
         for step_data in chain_data["steps"]:
             if int(step_data["step"]) >= int(from_step):
                 if "prompt" in step_data and "step" in step_data:
-                    step = {}
-                    step["agent_name"] = (
-                        agent_override
+                    step = {
+                        "agent_name": agent_override
                         if agent_override != ""
-                        else step_data["agent_name"]
-                    )
-                    step["prompt_type"] = step_data["prompt_type"]
-                    step["prompt"] = step_data["prompt"]
+                        else step_data["agent_name"],
+                        "prompt_type": step_data["prompt_type"],
+                        "prompt": step_data["prompt"],
+                    }
                     logging.info(
                         f"Running step {step_data['step']} with agent {step['agent_name']}."
                     )
@@ -454,16 +443,12 @@ class Interactions:
                     step["response"] = step_response
                     last_response = step_response
                     responses[step_data["step"]] = step  # Store the response.
-                    logging.info(f"Response: {step_response}")
+                    logging.info(f"Response: {last_response}")
                     # Write the responses to the json file.
                     dt = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     with open(file_path, "w") as f:
                         json.dump(responses, f)
-        if all_responses == True:
-            return responses
-        else:
-            # Return only the last response in the chain.
-            return last_response
+        return responses if all_responses == True else last_response
 
     async def smart_instruct(
         self,
@@ -502,16 +487,12 @@ class Interactions:
                 return {}
             if isinstance(cleaned_json, list):
                 cleaned_json = cleaned_json[0]
-            response = json.loads(cleaned_json)
-            return response
+            return json.loads(cleaned_json)
         except:
             logging.info("INVALID JSON RESPONSE")
             logging.info(execution_response)
             logging.info("... Trying again.")
-            if context_results != 0:
-                context_results = context_results - 1
-            else:
-                context_results = 0
+            context_results = context_results - 1 if context_results != 0 else 0
             execution_response = ApiClient.prompt_agent(
                 agent_name=self.agent_name,
                 user_input=user_input,
@@ -535,57 +516,55 @@ class Interactions:
             context_results=context_results,
             **kwargs,
         )
-        if "commands" in validated_response:
-            for command_name, command_args in validated_response["commands"].items():
-                # Search for the command in the available_commands list, and if found, use the command's name attribute for execution
-                if command_name is not None:
-                    for available_command in self.agent.available_commands:
-                        if command_name == available_command["friendly_name"]:
-                            # Check if the command is a valid command in the self.avent.available_commands list
-                            try:
-                                if bool(self.agent.AUTONOMOUS_EXECUTION) == True:
-                                    command_output = await self.agent.execute(
-                                        command_name=command_name,
-                                        command_args=command_args,
-                                    )
-                                else:
-                                    command_output = create_command_suggestion_chain(
-                                        agent_name=self.agent_name,
-                                        command_name=command_name,
-                                        command_args=command_args,
-                                    )
-                            except Exception as e:
-                                logging.info("Command validation failed, retrying...")
-                                validate_command = ApiClient.prompt_agent(
-                                    agent_name=self.agent_name,
-                                    user_input=user_input,
-                                    context_results=context_results,
-                                    prompt_name="ValidationFailed",
-                                    prompt_args={
-                                        "command_name": command_name,
-                                        "command_args": command_args,
-                                        "command_output": e,
-                                        **kwargs,
-                                    },
-                                )
-                                return await self.execution_agent(
-                                    execution_response=validate_command,
-                                    user_input=user_input,
-                                    context_results=context_results,
-                                    **kwargs,
-                                )
-                            logging.info(
-                                f"Command {command_name} executed successfully with args {command_args}. Command Output: {command_output}"
-                            )
-                            response = f"\nExecuted Command:{command_name} with args {command_args}.\nCommand Output: {command_output}\n"
-                            return response
-                else:
-                    if command_name == "None.":
-                        return "\nNo commands were executed.\n"
-                    else:
-                        return f"\Command not recognized: `{command_name}`."
-        else:
+        if "commands" not in validated_response:
             return "\nNo commands were executed.\n"
+        for command_name, command_args in validated_response["commands"].items():
+            if command_name is None:
+                return (
+                    "\nNo commands were executed.\n"
+                    if command_name == "None."
+                    else f"\Command not recognized: `{command_name}`."
+                )
+            for available_command in self.agent.available_commands:
+                if command_name == available_command["friendly_name"]:
+                            # Check if the command is a valid command in the self.avent.available_commands list
+                    try:
+                        command_output = (
+                            await self.agent.execute(
+                                command_name=command_name,
+                                command_args=command_args,
+                            )
+                            if bool(self.agent.AUTONOMOUS_EXECUTION)
+                            else create_command_suggestion_chain(
+                                agent_name=self.agent_name,
+                                command_name=command_name,
+                                command_args=command_args,
+                            )
+                        )
+                    except Exception as e:
+                        logging.info("Command validation failed, retrying...")
+                        validate_command = ApiClient.prompt_agent(
+                            agent_name=self.agent_name,
+                            user_input=user_input,
+                            context_results=context_results,
+                            prompt_name="ValidationFailed",
+                            prompt_args={
+                                "command_name": command_name,
+                                "command_args": command_args,
+                                "command_output": e,
+                                **kwargs,
+                            },
+                        )
+                        return await self.execution_agent(
+                            execution_response=validate_command,
+                            user_input=user_input,
+                            context_results=context_results,
+                            **kwargs,
+                        )
+                    logging.info(
+                        f"Command {command_name} executed successfully with args {command_args}. Command Output: {command_output}"
+                    )
+                    return f"\nExecuted Command:{command_name} with args {command_args}.\nCommand Output: {command_output}\n"
 
     async def get_web_content(self, url):
         try:
@@ -613,7 +592,7 @@ class Interactions:
             return None, None
 
     async def resursive_browsing(self, user_input, links):
-        chunk_size = int(int(self.agent.MAX_TOKENS) / 2)
+        chunk_size = int(self.agent.MAX_TOKENS) // 2
         try:
             words = links.split()
             links = [
@@ -646,11 +625,7 @@ class Interactions:
                                 tokens = len(self.nlp(collected_data))
                                 chunks = [
                                     collected_data[i : i + chunk_size]
-                                    for i in range(
-                                        0,
-                                        int(tokens),
-                                        chunk_size,
-                                    )
+                                    for i in range(0, tokens, chunk_size)
                                 ]
                                 for chunk in chunks:
                                     summarized_content = ApiClient.prompt_agent(

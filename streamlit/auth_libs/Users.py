@@ -124,14 +124,13 @@ def check_auth_status():
         # Redirect to the login page if not
         redir.nav_page("Login")
         logging.info("Not logged in")
-    else:
-        if CFIG.load_config()["auth_setup"] == True:
-            if (
-                st.session_state.get("logged_in")
-                and st.session_state.get("login_page") == True
-            ):
-                logging.info("Logged In!")
-                redir.nav_page("Profile")
-            logout_button()
-        elif st.session_state.get("login_page") == "Profile_Page":
-            redir.nav_page("Login")
+    elif CFIG.load_config()["auth_setup"] == True:
+        if (
+            st.session_state.get("logged_in")
+            and st.session_state.get("login_page") == True
+        ):
+            logging.info("Logged In!")
+            redir.nav_page("Profile")
+        logout_button()
+    elif st.session_state.get("login_page") == "Profile_Page":
+        redir.nav_page("Login")

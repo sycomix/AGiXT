@@ -20,11 +20,10 @@ class briantts(Extensions):
         )
         response = requests.get(tts_url)
 
-        if response.status_code == 200:
-            with open("speech.mp3", "wb") as f:
-                f.write(response.content)
-            playsound("speech.mp3")
-            os.remove("speech.mp3")
-            return True
-        else:
+        if response.status_code != 200:
             return False
+        with open("speech.mp3", "wb") as f:
+            f.write(response.content)
+        playsound("speech.mp3")
+        os.remove("speech.mp3")
+        return True

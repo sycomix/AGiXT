@@ -49,11 +49,7 @@ class file_system(Extensions):
             result = subprocess.run(
                 f"python {file_path}", capture_output=True, encoding="utf8", shell=True
             )
-            if result.returncode == 0:
-                return result.stdout
-            else:
-                return f"Error: {result.stderr}"
-
+            return result.stdout if result.returncode == 0 else f"Error: {result.stderr}"
         try:
             client = docker.from_env()
 
@@ -193,14 +189,10 @@ class file_system(Extensions):
         return found_files
 
     async def indent_string(self, string: str, indents: int = 1):
-        if indents == 1:
-            indent = "    "
-        else:
-            indent = "    " * indents
+        indent = "    " if indents == 1 else "    " * indents
         lines = string.split("\n")
         indented_lines = [(indent + line) for line in lines]
-        indented_string = "\n".join(indented_lines)
-        return indented_string
+        return "\n".join(indented_lines)
 
     async def generate_commands_dict(self, python_file_content):
         function_names = re.findall(r"async def (.*?)\(", python_file_content)

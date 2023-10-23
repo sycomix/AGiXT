@@ -28,7 +28,7 @@ if st.session_state.get("logged_in"):
 def registration_form(auth):
     user_data = load_users()
 
-    if auth and not conf["auth_setup_config"] == "No Login":
+    if auth and conf["auth_setup_config"] != "No Login":
         st.write("Registration Form")
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")

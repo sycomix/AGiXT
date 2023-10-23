@@ -269,9 +269,9 @@ class agixt_chain(Extensions):
         )
         new_extension = Prompts().get_prompt(prompt_name="New Extension Format")
         new_extension = new_extension.replace("{extension_name}", extension_name)
-        new_extension = new_extension.replace("extension_commands", "STEP" + str(i))
+        new_extension = new_extension.replace("extension_commands", f"STEP{i}")
         new_extension = new_extension.replace(
-            "extension_functions", "STEP" + str(i - 1)
+            "extension_functions", f"STEP{str(i - 1)}"
         )
         new_extension = new_extension.replace("{auth_type}", auth_type)
         i += 1

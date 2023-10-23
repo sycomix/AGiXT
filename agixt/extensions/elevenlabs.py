@@ -25,11 +25,10 @@ class elevenlabs(Extensions):
         tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voices[voice_index]}"
         response = requests.post(tts_url, headers=headers, json={"text": text})
 
-        if response.status_code == 200:
-            with open("speech.mpeg", "wb") as f:
-                f.write(response.content)
-            playsound("speech.mpeg", True)
-            os.remove("speech.mpeg")
-            return True
-        else:
+        if response.status_code != 200:
             return False
+        with open("speech.mpeg", "wb") as f:
+            f.write(response.content)
+        playsound("speech.mpeg", True)
+        os.remove("speech.mpeg")
+        return True

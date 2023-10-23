@@ -61,8 +61,7 @@ class CustomProvider:
             headers={"Authorization": f"Bearer {self.API_KEY}"},
             json=params,
         )
-        data = response.json()
-        if data:
+        if data := response.json():
             if "choices" in data:
                 if data["choices"]:
                     if "text" in data["choices"][0]:

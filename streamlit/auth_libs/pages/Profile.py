@@ -123,26 +123,10 @@ if (
 
     st.session_state["regCheck"] = allow_reg
 
-    if allow_reg == True:
-        ar_opposite = False
-    else:
-        ar_opposite = True
-
-    if allow_uac == True:
-        uac_opposite = False
-    else:
-        uac_opposite = True
-
-    if allow_ucp == True:
-        ucp_opposite = False
-    else:
-        ucp_opposite = True
-
-    if allow_uaa == True:
-        uaa_opposite = False
-    else:
-        uaa_opposite = True
-
+    ar_opposite = allow_reg != True
+    uac_opposite = allow_uac != True
+    ucp_opposite = allow_ucp != True
+    uaa_opposite = allow_uaa != True
     col1, col2 = st.columns(2)
 
     with col1:

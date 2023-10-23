@@ -70,49 +70,45 @@ class agixt_agent(Extensions):
         )
 
     async def ask(self, user_input: str, agent: str = "AGiXT") -> str:
-        response = ApiClient.prompt_agent(
+        return ApiClient.prompt_agent(
             agent_name=agent,
             user_input=user_input,
             prompt_name="Chat",
             websearch=True,
             websearch_depth=3,
         )
-        return response
 
     async def instruct(self, user_input: str, agent: str = "AGiXT") -> str:
-        response = ApiClient.prompt_agent(
+        return ApiClient.prompt_agent(
             agent_name=agent,
             user_input=user_input,
             prompt_name="instruct",
             websearch=True,
             websearch_depth=3,
         )
-        return response
 
     async def describe_image(self, image_url):
         """
         Describe an image using FuseCap.
         """
-        if image_url:
-            processor = BlipProcessor.from_pretrained("noamrot/FuseCap")
-            model = BlipForConditionalGeneration.from_pretrained("noamrot/FuseCap")
+        if not image_url:
+            return
+        processor = BlipProcessor.from_pretrained("noamrot/FuseCap")
+        model = BlipForConditionalGeneration.from_pretrained("noamrot/FuseCap")
 
-            # Define the device to run the model on (CPU or GPU)
+        # Define the device to run the model on (CPU or GPU)
 
-            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-            model.to(device)
-            raw_image = Image.open(requests.get(image_url, stream=True).raw).convert(
-                "RGB"
-            )
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model.to(device)
+        raw_image = Image.open(requests.get(image_url, stream=True).raw).convert(
+            "RGB"
+        )
 
-            # Generate a caption for the image using FuseCap
-            text = "a picture of "
-            inputs = processor(raw_image, text, return_tensors="pt").to(device)
-            out = model.generate(max_length=20, temperature=0.7, **inputs, num_beams=3)
-            caption = processor.decode(out[0], skip_special_tokens=True)
-
-            # Return the caption
-            return caption
+        # Generate a caption for the image using FuseCap
+        text = "a picture of "
+        inputs = processor(raw_image, text, return_tensors="pt").to(device)
+        out = model.generate(max_length=20, temperature=0.7, **inputs, num_beams=3)
+        return processor.decode(out[0], skip_special_tokens=True)
 
     async def get_python_code_from_response(self, response: str):
         if "```python" in response:

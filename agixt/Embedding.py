@@ -61,9 +61,7 @@ class GoogleVertexEmbeddingFunction(EmbeddingFunction):
             self._api_url, json={"instances": [{"content": texts}]}
         ).json()
 
-        if "predictions" in response:
-            return response["predictions"]
-        return {}
+        return response["predictions"] if "predictions" in response else {}
 
 
 class LlamacppEmbeddingFunction(EmbeddingFunction):

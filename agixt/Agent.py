@@ -102,8 +102,7 @@ def get_agents():
     ]
     output = []
     if agents:
-        for agent in agents:
-            output.append({"name": agent, "status": False})
+        output.extend({"name": agent, "status": False} for agent in agents)
     return output
 
 
@@ -131,10 +130,7 @@ class Agent:
             if "embedder" in self.PROVIDER_SETTINGS:
                 self.EMBEDDER = self.PROVIDER_SETTINGS["embedder"]
             else:
-                if self.AI_PROVIDER == "openai":
-                    self.EMBEDDER = "openai"
-                else:
-                    self.EMBEDDER = "default"
+                self.EMBEDDER = "openai" if self.AI_PROVIDER == "openai" else "default"
             if "MAX_TOKENS" in self.PROVIDER_SETTINGS:
                 self.MAX_TOKENS = self.PROVIDER_SETTINGS["MAX_TOKENS"]
             else:
@@ -149,9 +145,7 @@ class Agent:
                 ]
                 if isinstance(self.AUTONOMOUS_EXECUTION, str):
                     self.AUTONOMOUS_EXECUTION = self.AUTONOMOUS_EXECUTION.lower()
-                    self.AUTONOMOUS_EXECUTION = (
-                        True if self.AUTONOMOUS_EXECUTION == "true" else False
-                    )
+                    self.AUTONOMOUS_EXECUTION = self.AUTONOMOUS_EXECUTION == "true"
             else:
                 self.AUTONOMOUS_EXECUTION = True
             self.commands = self.load_commands()
@@ -231,20 +225,14 @@ class Agent:
 
     def get_provider(self):
         config_file = self.get_agent_config()
-        if "provider" in config_file:
-            return config_file["provider"]
-        else:
-            return "openai"
+        return config_file["provider"] if "provider" in config_file else "openai"
 
     def get_command_params(self, func):
-        params = {}
         sig = signature(func)
-        for name, param in sig.parameters.items():
-            if param.default == Parameter.empty:
-                params[name] = None
-            else:
-                params[name] = param.default
-        return params
+        return {
+            name: None if param.default == Parameter.empty else param.default
+            for name, param in sig.parameters.items()
+        }
 
     def load_commands(self):
         commands = []
@@ -287,16 +275,17 @@ class Agent:
         try:
             with open(self.config_path) as agent_config:
                 try:
-                    agent_config_data = json.load(agent_config)
-                    return agent_config_data
+                    return json.load(agent_config)
                 except json.JSONDecodeError:
-                    agent_config_data = {}
-                    # Populate the agent_config with all commands enabled
-                    agent_config_data["commands"] = {
-                        command_name: "false"
-                        for command_name, _, _ in self.load_commands(self.agent_name)
+                    agent_config_data = {
+                        "commands": {
+                            command_name: "false"
+                            for command_name, _, _ in self.load_commands(
+                                self.agent_name
+                            )
+                        },
+                        "settings": DEFAULT_SETTINGS,
                     }
-                    agent_config_data["settings"] = DEFAULT_SETTINGS
                     # Save the updated agent_config to the file
                     with open(self.config_path, "w") as agent_config_file:
                         json.dump(agent_config_data, agent_config_file)
@@ -321,8 +310,7 @@ class Agent:
             if os.path.exists(self.config_path):
                 try:
                     with open(self.config_path, "r") as f:
-                        file_content = f.read().strip()
-                        if file_content:
+                        if file_content := f.read().strip():
                             return json.loads(file_content)
                 except:
                     None
@@ -330,24 +318,23 @@ class Agent:
             return self.get_agent_config()
 
     def update_agent_config(self, new_config, config_key):
-        if os.path.exists(self.config_path):
-            with open(self.config_path, "r") as f:
-                current_config = json.load(f)
-
-            # Ensure the config_key is present in the current configuration
-            if config_key not in current_config:
-                current_config[config_key] = {}
-
-            # Update the specified key with new_config while preserving other keys and values
-            for key, value in new_config.items():
-                current_config[config_key][key] = value
-
-            # Save the updated configuration back to the file
-            with open(self.config_path, "w") as f:
-                json.dump(current_config, f)
-            return f"Agent {self.agent_name} configuration updated."
-        else:
+        if not os.path.exists(self.config_path):
             return f"Agent {self.agent_name} configuration not found."
+        with open(self.config_path, "r") as f:
+            current_config = json.load(f)
+
+        # Ensure the config_key is present in the current configuration
+        if config_key not in current_config:
+            current_config[config_key] = {}
+
+        # Update the specified key with new_config while preserving other keys and values
+        for key, value in new_config.items():
+            current_config[config_key][key] = value
+
+        # Save the updated configuration back to the file
+        with open(self.config_path, "w") as f:
+            json.dump(current_config, f)
+        return f"Agent {self.agent_name} configuration updated."
 
     def get_history(self):
         if not os.path.exists(self.history_file):
@@ -357,9 +344,7 @@ class Agent:
         try:
             with open(self.history_file, "r") as f:
                 yaml_history = yaml.safe_load(f)
-            if "interactions" in yaml_history:
-                return yaml_history["interactions"]
-            return []
+            return yaml_history["interactions"] if "interactions" in yaml_history else []
         except:
             return []
 

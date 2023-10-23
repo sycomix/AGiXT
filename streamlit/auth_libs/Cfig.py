@@ -58,7 +58,4 @@ class Cfig:
 
     def get_admin_email(self):
         config = self.load_config()
-        if "admin_email" in config:
-            return config["admin_email"]
-        else:
-            return False
+        return config["admin_email"] if "admin_email" in config else False

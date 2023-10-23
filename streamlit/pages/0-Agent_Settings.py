@@ -61,11 +61,7 @@ def render_provider_settings(agent_settings, provider_name: str):
         required_settings = list(required_settings.keys())
 
     for key in required_settings:
-        if key in agent_settings:
-            default_value = agent_settings[key]
-        else:
-            default_value = ""
-
+        default_value = agent_settings[key] if key in agent_settings else ""
         user_val = st.text_input(key, value=default_value)
         rendered_settings[key] = user_val
 
@@ -97,8 +93,7 @@ if (
     st.session_state["new_agent_name"] = ""
 
 if not agent_name:
-    agent_file = st.file_uploader("Import Agent", type=["json"])
-    if agent_file:
+    if agent_file := st.file_uploader("Import Agent", type=["json"]):
         agent_name = agent_file.name.split(".")[0]
         agent_settings = agent_file.read().decode("utf-8")
         agent_config = json.loads(agent_settings)
@@ -110,11 +105,7 @@ if not agent_name:
         st.success(f"Agent '{agent_name}' imported.")
     new_agent_name = st.text_input("New Agent Name")
 
-    # Add an "Add Agent" button
-    add_agent_button = st.button("Add Agent")
-
-    # If the "Add Agent" button is clicked, create a new agent config file
-    if add_agent_button:
+    if add_agent_button := st.button("Add Agent"):
         if new_agent_name:
             try:
                 ApiClient.add_agent(new_agent_name, {})
@@ -177,12 +168,9 @@ if agent_name and not new_agent:
                     else:
                         default_value = val if val else ""
 
-                    user_val = st.text_input(
+                    if user_val := st.text_input(
                         key, value=default_value, key=f"{extension}_{key}"
-                    )
-
-                    # Check if the user value exists before saving the setting
-                    if user_val:
+                    ):
                         rendered_settings[key] = user_val
 
             return rendered_settings

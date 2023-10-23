@@ -28,7 +28,7 @@ class discord(Extensions):
                 intents = dc.Intents.default()
                 intents.typing = False
                 intents.presences = False
-                if self.DISCORD_API_KEY != "None" and self.DISCORD_API_KEY != "":
+                if self.DISCORD_API_KEY not in ["None", ""]:
                     self.bot = commands.Bot(
                         command_prefix=self.DISCORD_COMMAND_PREFIX, intents=intents
                     )

@@ -18,7 +18,7 @@ class Gpugpt4allProvider:
         **kwargs,
     ):
         try:
-            self.max_tokens = int(MAX_TOKENS)
+            self.max_tokens = MAX_TOKENS
         except:
             self.max_tokens = 2000
         self.AI_MODEL = AI_MODEL

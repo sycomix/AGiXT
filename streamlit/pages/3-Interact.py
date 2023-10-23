@@ -48,12 +48,10 @@ if mode == "Prompt":
 
     # Add input fields for prompt arguments
     st.markdown("### Prompt Variables")
-    prompt_args_values = {}
     skip_args = ["command_list", "context", "COMMANDS", "date"]
-    for arg in prompt_args:
-        if arg not in skip_args:
-            prompt_args_values[arg] = st.text_area(arg)
-
+    prompt_args_values = {
+        arg: st.text_area(arg) for arg in prompt_args if arg not in skip_args
+    }
     # Add a checkbox for websearch option
     websearch = st.checkbox("Enable websearch")
     websearch_depth = (
@@ -89,9 +87,7 @@ if mode == "Chat":
     st.markdown("### Choose an Agent to Chat With")
     smart_chat_toggle = st.checkbox("Enable Smart Chat")
     chat_prompt = st.text_area("Enter your message", key="chat_prompt")
-    send_button = st.button("Send Message")
-
-    if send_button:
+    if send_button := st.button("Send Message"):
         if agent_name and chat_prompt:
             with st.spinner("Thinking, please wait..."):
                 if smart_chat_toggle:
@@ -110,9 +106,7 @@ if mode == "Instruct":
     st.markdown("### Choose an Agent to Instruct")
     smart_instruct_toggle = st.checkbox("Enable Smart Instruct")
     instruct_prompt = st.text_area("Enter your instruction", key="instruct_prompt")
-    send_button = st.button("Send Message")
-
-    if send_button:
+    if send_button := st.button("Send Message"):
         if agent_name and instruct_prompt:
             with st.spinner("Thinking, please wait..."):
                 if smart_instruct_toggle:
@@ -142,9 +136,7 @@ if mode == "Chains":
         "Show All Responses (If not checked, you will only be shown the last step's response in the chain when done.)"
     )
     user_input = st.text_area("User Input")
-    # Need a checkbox for agent override
-    agent_override = st.checkbox("Override Agent")
-    if agent_override:
+    if agent_override := st.checkbox("Override Agent"):
         agent_name = agent_selection()
     else:
         agent_name = ""

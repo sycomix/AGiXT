@@ -37,7 +37,6 @@ class PoeProvider:
                     raise Exception(f"Invalid AI Model: {self.AI_MODEL}")
             for chunk in client.send_message(chatbot=self.AI_MODEL, message=prompt):
                 pass
-            response = chunk["text"].replace("\n", "\n")
-            return response
+            return chunk["text"].replace("\n", "\n")
         except Exception as e:
             return f"Poe Error: {e}"

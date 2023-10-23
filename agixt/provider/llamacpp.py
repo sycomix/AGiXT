@@ -35,7 +35,7 @@ class LlamacppProvider:
         self.MODEL_PATH = MODEL_PATH
         if self.MODEL_PATH:
             try:
-                self.MAX_TOKENS = int(self.MAX_TOKENS)
+                self.MAX_TOKENS = self.MAX_TOKENS
             except:
                 self.MAX_TOKENS = 2048
 

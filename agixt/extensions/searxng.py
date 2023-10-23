@@ -22,8 +22,7 @@ class searxng(Extensions):
             except:  # Select default remote server that typically works if unable to get list.
                 self.SEARXNG_INSTANCE_URL = "https://search.us.projectsegfau.lt"
         server = self.SEARXNG_INSTANCE_URL.rstrip("/")
-        endpoint = f"{server}/search"
-        return endpoint
+        return f"{server}/search"
 
     async def search(self, query: str) -> List[str]:
         try:
@@ -37,10 +36,10 @@ class searxng(Extensions):
                 },
             )
             results = response.json()
-            summaries = [
-                result["title"] + " - " + result["url"] for result in results["results"]
+            return [
+                result["title"] + " - " + result["url"]
+                for result in results["results"]
             ]
-            return summaries
         except:
             # The SearXNG server is down or refusing connection, so we will use the default one.
             self.SEARXNG_ENDPOINT = "https://search.us.projectsegfau.lt/search"

@@ -71,4 +71,4 @@ class huggingface(Extensions):
         )
 
         text = json.loads(response.content.decode("utf-8"))["text"]
-        return "The audio says: " + text
+        return f"The audio says: {text}"

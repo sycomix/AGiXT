@@ -63,14 +63,9 @@ class Memories:
                 await self.chroma_client.create_collection_async(
                     collection_name="memories"
                 )
-                memories = await self.chroma_client.get_collection_async(
-                    collection_name="memories"
-                )
-            else:
-                memories = await self.chroma_client.get_collection_async(
-                    collection_name="memories"
-                )
-            return memories
+            return await self.chroma_client.get_collection_async(
+                collection_name="memories"
+            )
         except Exception as e:
             raise RuntimeError(f"Unable to initialize chroma client: {e}")
 
@@ -103,7 +98,7 @@ class Memories:
     ):
         if result:
             if not isinstance(result, str):
-                result = str(result)
+                result = result
             chunks = await self.chunk_content(result, input)
             for chunk in chunks:
                 await self.store_memory(
@@ -115,7 +110,7 @@ class Memories:
     async def context_agent(self, query: str, top_results_num: int) -> List[str]:
         embedder, chunk_size = await self.get_embedder()
         collection = await self.get_collection()
-        if collection == None:
+        if collection is None:
             return []
         results = await self.chroma_client.get_nearest_matches_async(
             collection_name="memories",
@@ -123,14 +118,11 @@ class Memories:
             limit=top_results_num,
             min_relevance_score=0.1,
         )
-        context = []
-        for memory, score in results:
-            context.append(memory._text)
+        context = [memory._text for memory, score in results]
         trimmed_context = await self.trim_context(context)
         logging.info(f"CONTEXT: {trimmed_context}")
         context_str = "\n".join(trimmed_context)
-        response = f"Context: {context_str}\n\n"
-        return response
+        return f"Context: {context_str}\n\n"
 
     async def trim_context(self, context: List[str]) -> List[str]:
         embedder, chunk_size = await self.get_embedder()
@@ -160,8 +152,7 @@ class Memories:
     def score_chunk(self, chunk: str, keywords: set):
         """Score a chunk based on the number of query keywords it contains."""
         chunk_counter = Counter(chunk.split())
-        score = sum(chunk_counter[keyword] for keyword in keywords)
-        return score
+        return sum(chunk_counter[keyword] for keyword in keywords)
 
     async def chunk_content(
         self, content: str, query: str, overlap: int = 2

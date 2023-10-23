@@ -71,12 +71,15 @@ class Gpt4freeProvider:
                         messages=[{"role": "user", "content": prompt}],
                     )
                     if response:
-                        if provider == Ails:
-                            if "error" in response and "message" in response:
-                                response = None
-                        elif provider == Vercel:
-                            if response == "Vercel is currently not working.":
-                                response = None
+                        if (
+                            provider == Ails
+                            and "error" in response
+                            and "message" in response
+                            or provider != Ails
+                            and provider == Vercel
+                            and response == "Vercel is currently not working."
+                        ):
+                            response = None
                         if (
                             response
                             == "Unable to fetch the response, Please try again."

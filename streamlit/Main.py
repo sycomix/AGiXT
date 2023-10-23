@@ -24,7 +24,7 @@ except:
 
 
 agixt_docs()
-if light_theme == True:
+if light_theme:
     st.markdown(
         """
         <div style="text-align: center;">
@@ -35,7 +35,7 @@ if light_theme == True:
     )
 else:
     st.markdown(
-        f"""
+        """
         <div style="text-align: center;">
         <img src="https://josh-xt.github.io/AGiXT/images/AGiXT-gradient-light.svg" width="65%">
         </div>
